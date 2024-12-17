@@ -1,0 +1,221 @@
+Project context
+Une entreprise souhaite mettre en place une API REST pour gérer ses capteurs IoT. L'API doit permettre la gestion des appareil, mesures et alertes avec différents niveaux d'accès (USER/ADMIN) via une authentification sécurisée stateless. L'architecture technique repose sur Spring Boot et intègre les pratiques DevOps modernes
+
+​
+
+Entités Principales :
+
+Appareil : nom (String), type (DeviceType), status (enum : ACTIVE, INACTIVE), lastCommunication (LocalDateTime)
+
+Mesure : timestamp (LocalDateTime), value (Double)
+
+Alerte : severity (enum : NORMAL, LOW, MEDIUM, HIGH, CRITICAL), message (String), timestamp (LocalDateTime)
+
+Zone : nom (String), type (String), location (String)
+
+User : login (String), password (String), active (Boolean), roles (Collection
+
+Role : name (String), level (Integer)
+
+​
+
+Relations :
+
+Un Appareil appartient à une Zone
+
+Une Zone peut contenir plusieurs Devices
+
+Un Appareil peut avoir plusieurs Measurements
+
+Un Appareil peut générer plusieurs Alertes
+
+​
+
+Types d'Appareil :
+
+Capteur de température
+
+Capteur d'humidité
+
+​
+
+Pour les capteurs de température :
+
+CRITICAL : > 40°C ou < -10°C (message : risque immédiat pour les équipements)
+
+HIGH : 35-40°C ou -5°C à -10°C (message : situation préoccupante nécessitant une action rapide)
+
+MEDIUM : 30-35°C ou 0°C à -5°C (message : situation à surveiller)
+
+LOW : 25-30°C (message : légère déviation des valeurs optimales)
+
+NORMAL : 20-25°C (message : "Température dans la plage optimale")
+
+​
+
+Pour les capteurs d'humidité :
+
+CRITICAL : > 90% ou < 20% (message : risque de dommages matériels)
+
+HIGH : 80-90% ou 20-30% (message : conditions défavorables)
+
+MEDIUM : 70-80% ou 30-40% (message : situation à surveiller)
+
+LOW : 65-70% ou 40-45% (message : légère déviation)
+
+NORMAL : 45-65% (message : "Humidité dans la plage optimale")
+
+​
+
+Fonctionnalités Requises :
+
+Gestion des Devices :
+
+Lister tous les devices avec pagination (USER ou ADMIN)
+
+Rechercher les devices par zone avec pagination (USER ou ADMIN)
+
+Ajouter un nouveau device (ADMIN uniquement)
+
+/api/user/devices/**
+
+/api/admin/devices/**
+
+​
+
+Gestion des Zones :
+
+Consulter une zone (USER ou ADMIN)
+
+Ajouter une nouvelle zone (ADMIN uniquement)
+
+/api/user/zones/**
+
+/api/admin/zones/**
+
+​
+
+Gestion des Mesures :
+
+Consulter les mesures (USER ou ADMIN)
+
+Enregistrer une mesure (USER ou ADMIN)
+
+Exporter les mesures (USER ou ADMIN)
+
+Consulter les mesures d'un device avec pagination (USER ou ADMIN)
+
+/api/user/measurements/**
+
+/api/admin/measurements/**
+
+​
+
+Gestion des Alertes :
+
+Consulter les alertes (USER ou ADMIN)
+
+GET /api/user/alerts/** GET /api/admin/alerts/**
+
+​
+
+Gestion des Utilisateurs :
+
+/api/auth/login (authentification)
+
+POST /api/auth/register (création de compte)
+
+GET /api/admin/users (liste des utilisateurs, ADMIN uniquement)
+
+PUT /api/admin/users/{id}/roles (gestion des rôles, ADMIN uniquement)
+
+​
+
+Sécurité :
+
+Mise en place de Spring Security
+
+Authentification stateless avec JWT
+
+Les URLs /api/admin/* nécessitent le rôle ADMIN
+
+Les URLs /api/user/* nécessitent le rôle USER
+
+Utiliser BCryptPasswordEncoder pour le cryptage des mots de passe
+
+​
+
+Conteneurisation avec Docker :
+
+Structure du Dockerfile
+
+Scripts de démarrage
+
+--> générer une image Docker via Jenkins puis la stocker dans un compte dockerHub
+
+--> SonarLint pour les vérifications en local
+
+--> Spring Actuator pour le monitoring
+
+​
+
+Intégration Continue et Qualité :
+
+​
+
+Utiliser jenkins
+
+​
+
+**Bonus : **
+
+--> utiliser GitHub Actions pour agir comme un premier filtre de qualité qui va exécuter une série de tests rapides suivants :
+
+Les tests unitaires pour vérifier les fonctionnalités de base
+La validation de la syntaxe du code
+La vérification du style et des conventions
+Un scan rapide des vulnérabilités dans les dépendances
+Vérification de la compilation
+Une fois toutes ces vérifications sont réussies GitHub Actions donne le feu vert pour déclencher le pipeline Jenkins qui se chargera des autres tâches
+
+​
+
+Technologies et concepts à utiliser :
+
+Spring Boot
+
+REST API
+
+Spring Data
+
+Gestion des exceptions : @ControllerAdvice , exceptions métier personnalisées
+
+Validation : Bean Validation (@Valid, @NotNull, etc.), validateurs personnalisés
+
+Bases de données : Utiliser un SGBD NoSQL : mongoDB tout en gardant Spring Data comme framework de mapping objet document
+
+​
+
+Exigences techniques à utiliser :
+
+Profiles (dev, prod)
+
+Configuration purement XML ou uniquement avec annotations au choix
+
+Tests unitaires et d'intégration (JUnit et Mockito)
+
+Tests de sécurité basiques
+
+Design patterns (Repository, DTO, Mapper)
+
+Système de logging (LOGGER)
+
+Validations métier
+
+Gestion des transactions
+
+Fonctionnalités Java : Stream API, Lambda expressions, Java Time API, Optional, Collection API
+
+​
+
+Outils de travail : Git avec branches, IDE au choix, JIRA + Scrum, Lombok, Spring Boot DevTools, SonarLint, Debugger, Tests via Postman, Swagger pour documentation API

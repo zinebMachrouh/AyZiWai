@@ -1,0 +1,122 @@
+{
+    "info": {
+        "name": "AyZiWai API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "pm.environment.set(\"user_id\", jsonData.id);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/auth/register",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin123\",\n    \"roles\": [\"ADMIN\"]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = JSON.parse(responseBody);",
+                                    "pm.environment.set(\"token\", jsonData.token);"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin123\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],  
+                        "url": "{{base_url}}/api/admin/users"
+                    }
+                },
+                {
+                    "name": "Update User Roles",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/admin/users/{{user_id}}/roles",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\"USER\", \"ADMIN\"]"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080"
+        },
+        {
+            "key": "token",
+            "value": "your_jwt_token_here"
+        },
+        {
+            "key": "user_id",
+            "value": "user_id_here"
+        }
+    ]
+}
