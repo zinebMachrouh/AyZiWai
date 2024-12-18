@@ -7,7 +7,9 @@ services:
       - mongo
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      MONGO_URI: mongodb://mongo:27017/ayziwai_prod
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/ayziwai_prod
+    networks:
+      - ayziwai-network
 
   mongo:
     image: mongo:latest
@@ -15,6 +17,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    networks:
+      - ayziwai-network
 
 volumes:
   mongo-data:
+
+networks:
+  ayziwai-network:
+    driver: bridge

@@ -67,18 +67,11 @@ pipeline {
             steps {
                 script {
                     dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
-                        withCredentials([
-                            usernamePassword(
-                                credentialsId: 'dockerhub-credentials',
-                                usernameVariable: 'DOCKER_USERNAME',
-                                passwordVariable: 'DOCKER_PASSWORD'
-                            ),
-                            usernamePassword(
-                                credentialsId: 'git-credentials',
-                                usernameVariable: 'GIT_USERNAME',
-                                passwordVariable: 'GIT_PASSWORD'
-                            )
-                        ]) {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'dockerhub-credentials',
+                            usernameVariable: 'DOCKER_USERNAME',
+                            passwordVariable: 'DOCKER_PASSWORD'
+                        )]) {
                             bat 'docker-compose up -d'
                         }
                     }
