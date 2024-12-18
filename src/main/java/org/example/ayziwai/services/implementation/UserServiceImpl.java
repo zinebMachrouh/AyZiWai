@@ -1,7 +1,8 @@
 package org.example.ayziwai.services.implementation;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ayziwai.dto.UserDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.example.ayziwai.dto.response.UserResponse;
 import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.DoesNotExistsException;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -20,14 +22,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public List<UserDTO> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(this::convertToDTO)
+                .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDTO updateUserRoles(String id, Set<String> roles) {
+    public UserResponse updateUserRoles(String id, Set<String> roles) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new DoesNotExistsException("User not found"));
 
@@ -40,16 +42,17 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toSet());
 
         user.setRoles(newRoles);
-        return convertToDTO(userRepository.save(user));
+        return convertToResponse(userRepository.save(user));
     }
 
-    private UserDTO convertToDTO(User user) {
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setLogin(user.getLogin());
-        dto.setRoles(user.getRoles().stream()
-                .map(role -> role.getName().replace("ROLE_", ""))
-                .collect(Collectors.toSet()));
-        return dto;
+    private UserResponse convertToResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .login(user.getLogin())
+                .active(true)
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().replace("ROLE_", ""))
+                        .collect(Collectors.toSet()))
+                .build();
     }
 } 

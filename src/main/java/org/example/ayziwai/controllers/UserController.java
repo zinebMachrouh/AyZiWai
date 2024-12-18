@@ -1,7 +1,7 @@
 package org.example.ayziwai.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ayziwai.dto.UserDTO;
+import org.example.ayziwai.dto.response.UserResponse;
 import org.example.ayziwai.services.interfaces.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,12 +19,12 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @PutMapping("/{id}/roles")
-    public ResponseEntity<UserDTO> updateUserRoles(
+    public ResponseEntity<UserResponse> updateUserRoles(
             @PathVariable String id,
             @RequestBody Set<String> roles) {
         return ResponseEntity.ok(userService.updateUserRoles(id, roles));
