@@ -1,4 +1,4 @@
-package org.example.ayziwai.dto;
+package org.example.ayziwai.dto.request;
 
 import lombok.Data;
 
