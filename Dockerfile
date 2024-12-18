@@ -1,10 +1,19 @@
-FROM eclipse-temurin:17-jdk-alpine as builder
-WORKDIR /app
-COPY . .
-RUN ./mvnw clean package -DskipTests
+# Use OpenJDK 21 as the base image
+FROM eclipse-temurin:21-jdk-alpine
 
-FROM eclipse-temurin:17-jre-alpine
+# Set the working directory
 WORKDIR /app
-COPY --from=builder /app/target/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Copy the project files
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+COPY src ./src/
+
+# Make the mvnw script executable
+RUN chmod +x mvnw
+
+# Build the application
+RUN ./mvnw package -DskipTests
+
+# Run the application
+CMD ["java", "-jar", "target/AyZiWai-0.0.1-SNAPSHOT.jar"]
