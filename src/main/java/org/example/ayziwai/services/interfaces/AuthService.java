@@ -1,4 +1,4 @@
-package org.example.ayziwai.services;
+package org.example.ayziwai.services.interfaces;
 
 import org.example.ayziwai.dto.UserDTO;
 import org.example.ayziwai.dto.request.LoginRequest;

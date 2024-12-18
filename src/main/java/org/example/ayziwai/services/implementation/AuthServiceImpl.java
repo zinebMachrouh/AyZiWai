@@ -1,4 +1,4 @@
-package org.example.ayziwai.services.impl;
+package org.example.ayziwai.services.implementation;
 
 import lombok.RequiredArgsConstructor;
 
@@ -9,7 +9,7 @@ import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.AlreadyExistsException;
 import org.example.ayziwai.repositories.UserRepository;
-import org.example.ayziwai.services.AuthService;
+import org.example.ayziwai.services.interfaces.AuthService;
 import org.example.ayziwai.utils.JWTUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

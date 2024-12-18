@@ -1,4 +1,4 @@
-package org.example.ayziwai.services.impl;
+package org.example.ayziwai.services.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ayziwai.dto.UserDTO;
@@ -6,7 +6,7 @@ import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.DoesNotExistsException;
 import org.example.ayziwai.repositories.UserRepository;
-import org.example.ayziwai.services.UserService;
+import org.example.ayziwai.services.interfaces.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
