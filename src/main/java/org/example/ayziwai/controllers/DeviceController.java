@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,15 +18,29 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    // @GetMapping("/api/user/devices")
-    // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    // public ResponseEntity<Page<DeviceResponse>> getAllDevices(Pageable pageable) {
-    //     return ResponseEntity.ok(deviceService.getAllDevices(pageable));
-    // }
+    @GetMapping("/api/user/devices")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<?> getAllDevices(Pageable pageable) {
+        try {
+            Page<DeviceResponse> devices = deviceService.getAllDevices(pageable);
+            return ResponseEntity.ok(devices);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body("Access denied: Insufficient privileges");
+        }
+    }
 
     @PostMapping("/api/admin/devices")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<DeviceResponse> createDevice(@RequestBody DeviceRequest deviceRequest) {
-        return new ResponseEntity<>(deviceService.createDevice(deviceRequest), HttpStatus.CREATED);
+    public ResponseEntity<?> createDevice(@RequestBody DeviceRequest deviceRequest) {
+        try {
+            DeviceResponse device = deviceService.createDevice(deviceRequest);
+            return new ResponseEntity<>(device, HttpStatus.CREATED);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body("Access denied: Admin privileges required");
+        }
     }
 }
