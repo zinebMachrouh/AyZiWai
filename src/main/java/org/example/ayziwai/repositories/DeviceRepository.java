@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DeviceRepository extends MongoRepository<Device, String> {
-    // Commented out until Zone relationship is properly implemented
-    // Page<Device> findByZone(String zone, Pageable pageable);
+    
+    Page<Device> findByZone(String zone, Pageable pageable);
 }

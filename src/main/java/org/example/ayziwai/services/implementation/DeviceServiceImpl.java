@@ -18,19 +18,19 @@ public class DeviceServiceImpl implements DeviceService {
     private final DeviceRepository deviceRepository;
     private final DeviceMapper deviceMapper;
 
-    // @Override
-    // public Page<DeviceResponse> getAllDevices(Pageable pageable) {
-    //     return deviceRepository.findAll(pageable)
-    //             .map(deviceMapper::toResponse);
-    // }
+    @Override
+    public Page<DeviceResponse> getAllDevices(Pageable pageable) {
+        return deviceRepository.findAll(pageable)
+                .map(deviceMapper::toResponse);
+    }
 
-    /*
+     
     @Override
     public Page<DeviceResponse> getDevicesByZone(String zone, Pageable pageable) {
         return deviceRepository.findByZone(zone, pageable)
                 .map(deviceMapper::toResponse);
     }
-    */
+    
 
     @Override
     public DeviceResponse createDevice(DeviceRequest deviceRequest) {
