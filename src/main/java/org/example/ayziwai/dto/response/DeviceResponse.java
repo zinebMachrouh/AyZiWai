@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 @Builder
 public class DeviceResponse {
+    private String id;
     private String name;
     private DeviceType type;
     private DeviceStatus status;

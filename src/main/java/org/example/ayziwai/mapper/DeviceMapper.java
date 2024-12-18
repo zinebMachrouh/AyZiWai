@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface DeviceMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "lastCheck", ignore = true)
     Device toEntity(DeviceRequest request);
 
     DeviceResponse toResponse(Device device);
