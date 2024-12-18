@@ -18,5 +18,6 @@ public class Device {
     private DeviceType type;
     private DeviceStatus status;
     private LocalDateTime lastCheck;
+    private String zone;
     
 }
