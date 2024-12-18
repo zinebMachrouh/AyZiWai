@@ -1,7 +1,9 @@
 package org.example.ayziwai.security;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.util.Optional;
+
+import org.example.ayziwai.services.TokenBlacklistService;
 import org.example.ayziwai.utils.JWTUtil;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,8 +18,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -29,6 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -36,14 +39,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        try {
+        String token = extractToken(request);
+        
+        if (token != null) {
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            
             extractAndValidateToken(request)
-                    .ifPresent(token -> authenticateUser(token, request));
-        } catch (Exception e) {
-            log.error("Cannot set user authentication", e);
+                    .ifPresent(validToken -> authenticateUser(validToken, request));
         }
-
+        
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER))
+                .filter(header -> header.startsWith(BEARER_PREFIX))
+                .map(header -> header.substring(BEARER_PREFIX.length()))
+                .orElse(null);
     }
 
     private Optional<String> extractAndValidateToken(HttpServletRequest request) {
@@ -75,6 +90,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth/");
+        return path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register");
     }
 } 
