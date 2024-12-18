@@ -1,14 +1,13 @@
-package org.example.ayziwai.dto;
-
-import lombok.Data;
+package org.example.ayziwai.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.Collection;
+import lombok.Data;
+
+import java.util.Set;
 
 @Data
-public class UserDTO {
-    private String id;
+public class UserRequest {
     
     @NotBlank(message = "Login is required")
     @Size(min = 3, max = 50, message = "Login must be between 3 and 50 characters")
@@ -18,6 +17,5 @@ public class UserDTO {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
     
-    private boolean active;
-    private Collection<String> roles;
-}
+    private Set<String> roles;
+} 

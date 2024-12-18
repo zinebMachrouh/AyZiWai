@@ -1,10 +1,10 @@
 package org.example.ayziwai.controllers;
 
 import lombok.RequiredArgsConstructor;
-
-import org.example.ayziwai.dto.UserDTO;
 import org.example.ayziwai.dto.request.LoginRequest;
+import org.example.ayziwai.dto.request.UserRequest;
 import org.example.ayziwai.dto.response.LoginResponse;
+import org.example.ayziwai.dto.response.UserResponse;
 import org.example.ayziwai.services.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -28,7 +27,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> register(@Valid @RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(authService.register(userDTO));
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest userRequest) {
+        return ResponseEntity.ok(authService.register(userRequest));
     }
 }

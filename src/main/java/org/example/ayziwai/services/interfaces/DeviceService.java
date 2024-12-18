@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface DeviceService {
-    Page<DeviceResponse> getAllDevices(Pageable pageable);
-    Page<DeviceResponse> getDevicesByZone(String zone, Pageable pageable);
+    // Page<DeviceResponse> getAllDevices(Pageable pageable);
+    // Page<DeviceResponse> getDevicesByZone(String zone, Pageable pageable);
     DeviceResponse createDevice(DeviceRequest deviceRequest);
 }

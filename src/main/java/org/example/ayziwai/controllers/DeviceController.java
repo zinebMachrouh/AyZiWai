@@ -17,19 +17,11 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    @GetMapping("/api/user/devices")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Page<DeviceResponse>> getAllDevices(Pageable pageable) {
-        return ResponseEntity.ok(deviceService.getAllDevices(pageable));
-    }
-
-    @GetMapping("/api/user/devices/zone/{zone}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Page<DeviceResponse>> getDevicesByZone(
-            @PathVariable String zone,
-            Pageable pageable) {
-        return ResponseEntity.ok(deviceService.getDevicesByZone(zone, pageable));
-    }
+    // @GetMapping("/api/user/devices")
+    // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    // public ResponseEntity<Page<DeviceResponse>> getAllDevices(Pageable pageable) {
+    //     return ResponseEntity.ok(deviceService.getAllDevices(pageable));
+    // }
 
     @PostMapping("/api/admin/devices")
     @PreAuthorize("hasRole('ADMIN')")

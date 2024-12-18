@@ -1,10 +1,11 @@
 package org.example.ayziwai.services.implementation;
 
 import lombok.RequiredArgsConstructor;
-
-import org.example.ayziwai.dto.UserDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.example.ayziwai.dto.request.LoginRequest;
+import org.example.ayziwai.dto.request.UserRequest;
 import org.example.ayziwai.dto.response.LoginResponse;
+import org.example.ayziwai.dto.response.UserResponse;
 import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.AlreadyExistsException;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -30,17 +32,17 @@ public class AuthServiceImpl implements AuthService {
     private final JWTUtil jwtUtil;
 
     @Override
-    public UserDTO register(UserDTO userDTO) {
-        if (userRepository.existsByLogin(userDTO.getLogin())) {
-            throw new AlreadyExistsException("User with login " + userDTO.getLogin() + " already exists");
+    public UserResponse register(UserRequest userRequest) {
+        if (userRepository.existsByLogin(userRequest.getLogin())) {
+            throw new AlreadyExistsException("User with login " + userRequest.getLogin() + " already exists");
         }
 
         User user = new User();
-        user.setLogin(userDTO.getLogin());
-        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setLogin(userRequest.getLogin());
+        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         user.setActive(true);
         
-        Set<Role> roles = userDTO.getRoles().stream()
+        Set<Role> roles = userRequest.getRoles().stream()
             .map(roleName -> {
                 Role role = new Role();
                 role.setName("ROLE_" + roleName.toUpperCase());
@@ -50,9 +52,7 @@ public class AuthServiceImpl implements AuthService {
         user.setRoles(roles);
 
         User savedUser = userRepository.save(user);
-        userDTO.setId(savedUser.getId());
-        userDTO.setPassword(null);
-        return userDTO;
+        return convertToResponse(savedUser);
     }
 
     @Override
@@ -72,5 +72,16 @@ public class AuthServiceImpl implements AuthService {
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .collect(Collectors.toSet()))
             .build();
+    }
+
+    private UserResponse convertToResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .login(user.getLogin())
+                .active(user.isActive())
+                .roles(user.getRoles().stream()
+                        .map(role -> role.getName().replace("ROLE_", ""))
+                        .collect(Collectors.toSet()))
+                .build();
     }
 } 
