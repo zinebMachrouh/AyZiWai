@@ -1,14 +1,19 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-slim
+# Use OpenJDK 21 as the base image
+FROM eclipse-temurin:21-jdk-alpine
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . .
+# Copy the project files
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+COPY src ./src/
 
-# Package the application
+# Make the mvnw script executable
+RUN chmod +x mvnw
+
+# Build the application
 RUN ./mvnw package -DskipTests
 
 # Run the application
-CMD ["java", "-jar", "target/ayziwai-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/AyZiWai-0.0.1-SNAPSHOT.jar"]
