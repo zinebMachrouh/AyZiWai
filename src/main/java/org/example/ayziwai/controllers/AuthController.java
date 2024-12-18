@@ -1,9 +1,10 @@
 package org.example.ayziwai.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ayziwai.dto.LoginRequest;
-import org.example.ayziwai.dto.LoginResponse;
+
 import org.example.ayziwai.dto.UserDTO;
+import org.example.ayziwai.dto.request.LoginRequest;
+import org.example.ayziwai.dto.response.LoginResponse;
 import org.example.ayziwai.services.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
