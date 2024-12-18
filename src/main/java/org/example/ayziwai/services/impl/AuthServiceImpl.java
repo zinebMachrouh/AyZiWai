@@ -1,9 +1,10 @@
 package org.example.ayziwai.services.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.ayziwai.dto.LoginRequest;
-import org.example.ayziwai.dto.LoginResponse;
+
 import org.example.ayziwai.dto.UserDTO;
+import org.example.ayziwai.dto.request.LoginRequest;
+import org.example.ayziwai.dto.response.LoginResponse;
 import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.AlreadyExistsException;

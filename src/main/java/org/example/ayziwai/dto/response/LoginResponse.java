@@ -1,4 +1,4 @@
-package org.example.ayziwai.dto;
+package org.example.ayziwai.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
