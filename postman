@@ -9,17 +9,6 @@
             "item": [
                 {
                     "name": "Register",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = JSON.parse(responseBody);",
-                                    "pm.environment.set(\"user_id\", jsonData.id);"
-                                ]
-                            }
-                        }
-                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -37,17 +26,6 @@
                 },
                 {
                     "name": "Login",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var jsonData = JSON.parse(responseBody);",
-                                    "pm.environment.set(\"token\", jsonData.token);"
-                                ]
-                            }
-                        }
-                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -62,29 +40,29 @@
                             "raw": "{\n    \"login\": \"admin\",\n    \"password\": \"admin123\"\n}"
                         }
                     }
-                }
-            ]
-        },
-        {
-            "name": "Admin",
-            "item": [
+                },
                 {
-                    "name": "Get All Users",
+                    "name": "Logout",
                     "request": {
-                        "method": "GET",
+                        "method": "POST",
                         "header": [
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{token}}"
                             }
-                        ],  
-                        "url": "{{base_url}}/api/admin/users"
+                        ],
+                        "url": "{{base_url}}/api/auth/logout"
                     }
-                },
+                }
+            ]
+        },
+        {
+            "name": "Measures",
+            "item": [
                 {
-                    "name": "Update User Roles",
+                    "name": "Save Measure",
                     "request": {
-                        "method": "PUT",
+                        "method": "POST",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -95,15 +73,87 @@
                                 "value": "application/json"
                             }
                         ],
-                        "url": "{{base_url}}/api/admin/users/{{user_id}}/roles",
+                        "url": "{{base_url}}/api/v1/measures",
                         "body": {
                             "mode": "raw",
-                            "raw": "[\"USER\", \"ADMIN\"]"
+                            "raw": "{\n    \"value\": 25.5,\n    \"deviceId\": \"{{device_id}}\"\n}"
                         }
                     }
                 },
                 {
-                    "name": "Create Device",
+                    "name": "Get All Measures",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/measures?page=0&size=10",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "measures"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Measures by Device",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/measures/device/{{device_id}}?page=0&size=10",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "measures", "device", "{{device_id}}"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "0"
+                                },
+                                {
+                                    "key": "size",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Export Measures CSV",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/v1/measures/export"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Devices",
+            "item": [
+                {
+                    "name": "Create Device (Admin)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -119,38 +169,12 @@
                         "url": "{{base_url}}/api/admin/devices",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Temperature Sensor 1\",\n    \"type\": \"TEMPERATURE\",\n    \"status\": \"ACTIVE\",\n    \"zone\": \"Zone-A\"\n}"
+                            "raw": "{\n    \"name\": \"Device 1\",\n    \"type\": \"SMARTPHONE\",\n    \"status\": \"ACTIVE\",\n    \"lastCheck\": \"2024-03-20T10:00:00Z\"\n}"
                         }
                     }
                 },
                 {
-                    "name": "Create Zone",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}"
-                            },
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            }
-                        ],
-                        "url": "{{base_url}}/api/admin/zones",
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"name\": \"Zone-A\",\n    \"type\": \"PRODUCTION\",\n    \"location\": \"Building 1, Floor 2\"\n}"
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "User",
-            "item": [
-                {
-                    "name": "Get All Devices",
+                    "name": "Get All Devices (User)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -179,9 +203,74 @@
                             ]
                         }
                     }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users (Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/admin/users"
+                    }
                 },
                 {
-                    "name": "Get Zone by ID",
+                    "name": "Update User Roles (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/admin/users/{{user_id}}/roles",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "[\"USER\", \"ADMIN\"]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Zones",
+            "item": [
+                {
+                    "name": "Create Zone (Admin)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{base_url}}/api/admin/zones",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Zone A\",\n    \"type\": \"PRODUCTION\",\n    \"location\": \"Building 1, Floor 2\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Zone by ID (User)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -200,18 +289,6 @@
         {
             "key": "base_url",
             "value": "http://localhost:8080"
-        },
-        {
-            "key": "token",
-            "value": "your_jwt_token_here"
-        },
-        {
-            "key": "user_id",
-            "value": "user_id_here"
-        },
-        {
-            "key": "zone_id",
-            "value": "zone_id_here"
         }
     ]
 }
