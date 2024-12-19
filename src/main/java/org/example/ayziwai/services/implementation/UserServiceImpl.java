@@ -1,7 +1,9 @@
 package org.example.ayziwai.services.implementation;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.example.ayziwai.dto.response.UserResponse;
 import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
@@ -10,9 +12,8 @@ import org.example.ayziwai.repositories.UserRepository;
 import org.example.ayziwai.services.interfaces.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -29,14 +30,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUserRoles(String id, Set<String> roles) {
-        User user = userRepository.findById(id)
+    public UserResponse updateUserRoles(String userId, Set<String> roleNames) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DoesNotExistsException("User not found"));
 
-        Set<Role> newRoles = roles.stream()
-                .map(roleName -> {
+        Set<Role> newRoles = roleNames.stream()
+                .map(name -> {
                     Role role = new Role();
-                    role.setName("ROLE_" + roleName.toUpperCase());
+                    role.setName("ROLE_" + name.toUpperCase());
                     return role;
                 })
                 .collect(Collectors.toSet());

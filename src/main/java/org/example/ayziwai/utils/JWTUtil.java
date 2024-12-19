@@ -28,13 +28,17 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JWTUtil {
     
-    private static final String secret = generateSecretKey();
+    private static String secret;
     private static final long expiration = 1000 * 60 * 60 * 3;
 
     private SecretKey key;
 
     @PostConstruct
     public void init() {
+        if (secret == null) {
+            secret = generateSecretKey();
+            log.info("Generated new JWT secret key");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
