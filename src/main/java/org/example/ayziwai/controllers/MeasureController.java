@@ -2,6 +2,7 @@ package org.example.ayziwai.controllers;
 
 import lombok.AllArgsConstructor;
 import org.example.ayziwai.services.interfaces.MeasureService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,12 +29,14 @@ public class MeasureController {
     private final MeasureService measureService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<MeasureResponse> saveMeasure(@Valid @RequestBody MeasureRequest measureRequest) {
         MeasureResponse savedMeasure = measureService.saveMeasure(measureRequest);
         return ResponseEntity.ok(savedMeasure);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<MeasureResponse>> getAllMeasures(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -42,6 +45,7 @@ public class MeasureController {
     }
 
     @GetMapping("/device/{deviceId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Page<MeasureResponse>> getMeasuresByDevice(
             @PathVariable String deviceId,
             @RequestParam(defaultValue = "0") int page,
@@ -51,6 +55,7 @@ public class MeasureController {
     }
 
     @GetMapping("/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Resource> exportMeasuresAsCSV() {
         String csvContent = measureService.exportMeasures();
         ByteArrayResource resource = new ByteArrayResource(csvContent.getBytes(StandardCharsets.UTF_8));
