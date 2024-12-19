@@ -1,28 +1,56 @@
 services:
   app:
     build: .
+    container_name: ayziwai-app
     ports:
       - "8080:8080"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: prod
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/ayziwai_prod
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATA_MONGODB_URI=mongodb://admin:secret@mongo:27017/ayziwai_prod?authSource=admin
+      - JWT_SECRET=yourSecretKey
     networks:
       - ayziwai-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   mongo:
     image: mongo:latest
+    container_name: ayziwai-mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo-data:/data/db
+      - mongo-config:/data/configdb
+      - ./mongodb/init:/docker-entrypoint-initdb.d
     networks:
       - ayziwai-network
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+    command: mongod --auth
+    healthcheck:
+      test: mongosh --eval "db.adminCommand('ping')" --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
 volumes:
   mongo-data:
+    name: ayziwai-mongo-data
+  mongo-config:
+    name: ayziwai-mongo-config
 
 networks:
   ayziwai-network:
+    name: ayziwai-network
     driver: bridge
