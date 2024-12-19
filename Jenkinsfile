@@ -1,77 +1,80 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24-dind'
-            args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
-        GITHUB_REPO = 'https://github.com/zinebMachrouh/SoundWave.git'
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        DOCKER_IMAGE = 'soundwave-app'
+        DOCKER_HUB_REPO = 'tsukiiya101/ayziwai'
+        SONAR_PROJECT_KEY = 'AyZiWai'
     }
 
     stages {
-        stage('Clone Repository') {
-            steps {
-                git branch: 'main',
-                    credentialsId: '5f3d727a-2284-4bd6-aa3d-b19a8624474e',
-                    url: "${GITHUB_REPO}"
-            }
-        }
-
-        stage('Install Docker Compose') {
+        stage('Build') {
             steps {
                 script {
-                    sh '''
-                    apk add --no-cache curl
-                    curl -L "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                    chmod +x /usr/local/bin/docker-compose
-                    docker-compose --version
-                    '''
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                        bat 'mvn clean package -DskipTests'
+                    }
                 }
             }
         }
 
-        stage('Build and Test') {
+        stage('SonarQube Analysis') {
             steps {
                 script {
-                    sh '''
-                    docker build -t ${DOCKER_IMAGE} .
-                    '''
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                            bat """
+                                mvn clean verify sonar:sonar \
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                -Dsonar.projectName=${SONAR_PROJECT_KEY} \
+                                -Dsonar.host.url=http://localhost:9000 \
+                                -Dsonar.token=%SONAR_TOKEN%
+                            """
+                        }
+                    }
                 }
             }
         }
 
-        stage('Deploy Using Docker Compose') {
+        stage('Test') {
             steps {
                 script {
-                    sh '''
-                    docker-compose down
-                    docker-compose uhhhhp -d
-                    '''
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                        bat 'mvn test'
+                    }
                 }
             }
         }
 
-        stage('Verify Deployment') {
+        stage('Build and Push Docker Image') {
             steps {
                 script {
-                    sh '''
-                    docker ps
-                    curl -f http://localhost:8085 || exit 1
-                    '''
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'dockerhub-credentials',
+                            usernameVariable: 'DOCKER_USERNAME',
+                            passwordVariable: 'DOCKER_PASSWORD'
+                        )]) {
+                            bat "docker build -t ${DOCKER_HUB_REPO}:${BUILD_NUMBER} ."
+                            bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                            bat "docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}"
+                        }
+                    }
                 }
             }
         }
 
-        stage('Clean Up Unused Images') {
+        stage('Deploy') {
             steps {
                 script {
-                    sh '''
-                    docker image prune -f
-                    '''
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'dockerhub-credentials',
+                            usernameVariable: 'DOCKER_USERNAME',
+                            passwordVariable: 'DOCKER_PASSWORD'
+                        )]) {
+                            bat 'docker-compose up -d'
+                        }
+                    }
                 }
             }
         }
@@ -79,13 +82,14 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline completed. Check for any issues above.'
+            cleanWs()
+            bat "docker logout"
         }
         success {
-            echo 'Pipeline executed successfully!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Pipeline failed. Please check the logs for details.'
+            echo 'Pipeline failed!'
         }
     }
-}
+}   
