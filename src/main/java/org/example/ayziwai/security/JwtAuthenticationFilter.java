@@ -3,6 +3,7 @@ package org.example.ayziwai.security;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.example.ayziwai.services.RefreshTokenService;
 import org.example.ayziwai.services.TokenBlacklistService;
 import org.example.ayziwai.utils.JWTUtil;
 import org.springframework.lang.NonNull;
@@ -32,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -39,26 +41,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        String token = extractToken(request);
-        
-        if (token != null) {
-            if (tokenBlacklistService.isBlacklisted(token)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            
+        try {
             extractAndValidateToken(request)
-                    .ifPresent(validToken -> authenticateUser(validToken, request));
+                    .ifPresent(token -> processToken(token, request, response));
+        } catch (Exception e) {
+            log.error("Cannot set user authentication: {}", e.getMessage());
         }
-        
+
         filterChain.doFilter(request, response);
     }
 
-    private String extractToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(AUTHORIZATION_HEADER))
-                .filter(header -> header.startsWith(BEARER_PREFIX))
-                .map(header -> header.substring(BEARER_PREFIX.length()))
-                .orElse(null);
+    private void processToken(String token, HttpServletRequest request, HttpServletResponse response) {
+        if (tokenBlacklistService.isBlacklisted(token)) {
+            log.debug("Token is blacklisted");
+            return;
+        }
+
+        String username = jwtUtil.getUsernameFromToken(token);
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            
+            if (jwtUtil.isTokenExpiringSoon(token)) {
+                String newToken = refreshTokenService.refreshToken(token);
+                response.setHeader("New-Token", newToken);
+                token = newToken;
+            }
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                jwtUtil.getRolesFromToken(token)
+            );
+            
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("Authenticated user: {}", username);
+        }
     }
 
     private Optional<String> extractAndValidateToken(HttpServletRequest request) {
@@ -68,28 +86,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .filter(jwtUtil::validateToken);
     }
 
-    private void authenticateUser(String token, HttpServletRequest request) {
-        String username = jwtUtil.getUsernameFromToken(token);
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            createAuthentication(userDetails, token, request);
-        }
-    }
-
-    private void createAuthentication(UserDetails userDetails, String token, HttpServletRequest request) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                jwtUtil.getRolesFromToken(token)
-        );
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        log.debug("Set authentication for user: {}", userDetails.getUsername());
-    }
-
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register");
+        return path.startsWith("/api/auth/login") || 
+               path.startsWith("/api/auth/register");
     }
 } 

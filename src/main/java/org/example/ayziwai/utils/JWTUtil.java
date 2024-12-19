@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JWTUtil {
     
-    private static final long expiration = 1000 * 60 * 60 * 3;
+    private static final long expiration = 1000 * 60 * 5;
     private final Map<String, SecretKey> userSecretKeys = new ConcurrentHashMap<>();
 
     public String generateToken(User user) {
@@ -126,5 +126,24 @@ public class JWTUtil {
             log.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+
+    public boolean isTokenExpiringSoon(String token) {
+        try {
+            Claims claims = getClaimsFromToken(token);
+            Date expiration = claims.getExpiration();
+            // Check if token will expire in next 30 seconds
+            return expiration.getTime() - System.currentTimeMillis() <= 30000;
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
+    }
+
+    public User getUserFromToken(String token) {
+        Claims claims = getClaimsFromToken(token);
+        User user = new User();
+        user.setLogin(claims.getSubject());
+        // Set other user properties as needed
+        return user;
     }
 }
