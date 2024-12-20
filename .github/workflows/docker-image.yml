@@ -45,7 +45,8 @@ jobs:
       # Step 6: Run Tests
       - name: Run Unit Tests
         run: |
-          docker-compose -f docker-compose.yml up --abort-on-container-exit spring-app
+          docker-compose -f docker-compose.yml up --abort-on-container-exit test-runner
+          docker-compose -f docker-compose.yml down
 
   deploy:
     name: Deploy Application
