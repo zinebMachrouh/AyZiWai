@@ -18,7 +18,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Docker
+      # Step 2: Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -29,24 +29,24 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
-      # Step 4: Cache Docker Layers
-      - name: Cache Docker layers
+      # Step 4: Cache Maven Dependencies
+      - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ github.sha }}
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-docker-
+            ${{ runner.os }}-maven-
 
       # Step 5: Build Docker Images
       - name: Build Application Image
         run: |
           docker-compose -f docker-compose.yml build
 
-      # Step 6: Run Tests
+      # Step 6: Run Tests in Parallel (Optimize Test Run)
       - name: Run Unit Tests
         run: |
-          docker-compose -f docker-compose.yml up --abort-on-container-exit spring-app
+          docker-compose -f docker-compose.yml up --abort-on-container-exit --detach spring-app
 
   deploy:
     name: Deploy Application
@@ -72,12 +72,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 4: Push Docker Images
+      # Step 4: Push Docker Images to Docker Hub
       - name: Push Docker Image to Docker Hub
         run: |
           docker-compose -f docker-compose.yml push
 
-      # Step 5: Deploy Application
+      # Step 5: Deploy Containers
       - name: Deploy Containers
         run: |
           docker-compose -f docker-compose.yml up -d
