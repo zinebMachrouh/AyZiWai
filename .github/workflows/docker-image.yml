@@ -46,7 +46,7 @@ jobs:
       # Step 6: Run Tests in Parallel (Optimize Test Run)
       - name: Run Unit Tests
         run: |
-          docker-compose -f docker-compose.yml up --abort-on-container-exit --detach spring-app
+          docker-compose -f docker-compose.yml up --abort-on-container-exit
 
   deploy:
     name: Deploy Application
