@@ -1,45 +1,51 @@
 package org.example.ayziwai.utils;
 
 import org.example.ayziwai.entities.enums.AlertSeverity;
-import org.springframework.data.util.Pair;
+import org.example.ayziwai.entities.enums.DeviceType;
 
 public class AlertEvaluator {
 
-    public static Pair<AlertSeverity, String> evaluateAlert(String deviceType, double value) {
-        if ("Capteur de température".equals(deviceType)) {
-            return evaluateTemperature(value);
-        } else if ("Capteur d'humidité".equals(deviceType)) {
-            return evaluateHumidity(value);
-        } else {
-            throw new IllegalArgumentException("Unsupported device type");
-        }
+    public static AlertSeverity evaluateAlert(DeviceType deviceType, double value) {
+        return switch (deviceType) {
+            case TEMPERATURE -> evaluateTemperature(value);
+            case HUMIDITY -> evaluateHumidity(value);
+            case PRESSURE -> evaluatePressure(value);
+            case CO2 -> evaluateCO2(value);
+            case MOTION -> evaluateMotion(value);
+            default -> AlertSeverity.NORMAL;
+        };
     }
 
-    private static Pair<AlertSeverity, String> evaluateTemperature(double value) {
-        if (value > 40 || value < -10) {
-            return Pair.of(AlertSeverity.CRITICAL, "Risque immédiat pour les équipements");
-        } else if (value >= 35 || value <= -5) {
-            return Pair.of(AlertSeverity.HIGH, "Situation préoccupante nécessitant une action rapide");
-        } else if (value >= 30 || value <= 0) {
-            return Pair.of(AlertSeverity.MEDIUM, "Situation à surveiller");
-        } else if (value >= 25 || value <= 20) {
-            return Pair.of(AlertSeverity.LOW, "Légère déviation des valeurs optimales");
-        } else {
-            return Pair.of(AlertSeverity.NORMAL, "Température dans la plage optimale");
-        }
+    private static AlertSeverity evaluateTemperature(double value) {
+        if (value > 35) return AlertSeverity.CRITICAL;
+        if (value > 30) return AlertSeverity.HIGH;
+        if (value > 25) return AlertSeverity.MEDIUM;
+        if (value < 15) return AlertSeverity.LOW;
+        return AlertSeverity.NORMAL;
     }
 
-    private static Pair<AlertSeverity, String> evaluateHumidity(double value) {
-        if (value > 90 || value < 20) {
-            return Pair.of(AlertSeverity.CRITICAL, "Risque de dommages matériels");
-        } else if (value >= 80 || value <= 30) {
-            return Pair.of(AlertSeverity.HIGH, "Conditions défavorables");
-        } else if (value >= 70 || value <= 40) {
-            return Pair.of(AlertSeverity.MEDIUM, "Situation à surveiller");
-        } else if (value >= 65 || value <= 45) {
-            return Pair.of(AlertSeverity.LOW, "Légère déviation");
-        } else {
-            return Pair.of(AlertSeverity.NORMAL, "Humidité dans la plage optimale");
-        }
+    private static AlertSeverity evaluateHumidity(double value) {
+        if (value > 80) return AlertSeverity.CRITICAL;
+        if (value > 70) return AlertSeverity.HIGH;
+        if (value > 60) return AlertSeverity.MEDIUM;
+        if (value < 30) return AlertSeverity.LOW;
+        return AlertSeverity.NORMAL;
+    }
+
+    private static AlertSeverity evaluatePressure(double value) {
+        if (value > 1100) return AlertSeverity.HIGH;
+        if (value < 900) return AlertSeverity.LOW;
+        return AlertSeverity.NORMAL;
+    }
+
+    private static AlertSeverity evaluateCO2(double value) {
+        if (value > 2000) return AlertSeverity.CRITICAL;
+        if (value > 1500) return AlertSeverity.HIGH;
+        if (value > 1000) return AlertSeverity.MEDIUM;
+        return AlertSeverity.NORMAL;
+    }
+
+    private static AlertSeverity evaluateMotion(double value) {
+        return value > 0 ? AlertSeverity.HIGH : AlertSeverity.NORMAL;
     }
 }

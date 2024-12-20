@@ -10,7 +10,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai\\backend\\backend') {
                         bat 'mvn clean package -DskipTests'
                     }
                 }
@@ -20,7 +20,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai\\backend') {
                         withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                             bat """
                                 mvn clean verify sonar:sonar \
@@ -38,7 +38,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai\\backend') {
                         bat 'mvn test'
                     }
                 }
@@ -48,7 +48,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai\\backend') {
                         withCredentials([usernamePassword(
                             credentialsId: 'dockerhub-credentials',
                             usernameVariable: 'DOCKER_USERNAME',
@@ -66,7 +66,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai') {
+                    dir('C:\\Users\\ssngn\\Documents\\Youcode\\AyZiWai\\backend') {
                         withCredentials([usernamePassword(
                             credentialsId: 'dockerhub-credentials',
                             usernameVariable: 'DOCKER_USERNAME',

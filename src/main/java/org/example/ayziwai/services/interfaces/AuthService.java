@@ -8,4 +8,5 @@ import org.example.ayziwai.dto.response.UserResponse;
 public interface AuthService {
     LoginResponse login(LoginRequest loginRequest);
     UserResponse register(UserRequest userRequest);
+    void logout(String token);
 } 

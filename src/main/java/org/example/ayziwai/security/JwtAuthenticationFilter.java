@@ -1,13 +1,15 @@
 package org.example.ayziwai.security;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Optional;
 
-import org.example.ayziwai.services.RefreshTokenService;
 import org.example.ayziwai.services.TokenBlacklistService;
 import org.example.ayziwai.utils.JWTUtil;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,7 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final UserDetailsService userDetailsService;
     private final TokenBlacklistService tokenBlacklistService;
-    private final RefreshTokenService refreshTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -42,10 +43,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         try {
+            log.debug("Processing request: {} {}", request.getMethod(), request.getRequestURI());
+            
             extractAndValidateToken(request)
                     .ifPresent(token -> processToken(token, request, response));
+            
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                log.debug("Current Authentication: Principal={}, Authorities={}", 
+                    auth.getPrincipal(), 
+                    auth.getAuthorities());
+            }
         } catch (Exception e) {
-            log.error("Cannot set user authentication: {}", e.getMessage());
+            log.error("Cannot set user authentication: {}", e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
@@ -60,22 +70,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsernameFromToken(token);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            Collection<? extends GrantedAuthority> authorities = jwtUtil.getRolesFromToken(token);
             
-            if (jwtUtil.isTokenExpiringSoon(token)) {
-                String newToken = refreshTokenService.refreshToken(token);
-                response.setHeader("New-Token", newToken);
-                token = newToken;
-            }
-
+            log.debug("Token processing - Username: {}, Authorities: {}", username, authorities);
+            
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 userDetails,
                 null,
-                jwtUtil.getRolesFromToken(token)
+                authorities
             );
             
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Authenticated user: {}", username);
+            log.debug("Authentication set in SecurityContext - User: {}, Authorities: {}", 
+                username, authorities);
         }
     }
 

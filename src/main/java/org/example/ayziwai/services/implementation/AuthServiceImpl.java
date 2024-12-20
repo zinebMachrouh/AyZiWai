@@ -1,7 +1,8 @@
 package org.example.ayziwai.services.implementation;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.example.ayziwai.dto.request.LoginRequest;
 import org.example.ayziwai.dto.request.UserRequest;
 import org.example.ayziwai.dto.response.LoginResponse;
@@ -10,26 +11,24 @@ import org.example.ayziwai.entities.Role;
 import org.example.ayziwai.entities.User;
 import org.example.ayziwai.exceptions.AlreadyExistsException;
 import org.example.ayziwai.repositories.UserRepository;
+import org.example.ayziwai.services.TokenBlacklistService;
 import org.example.ayziwai.services.interfaces.AuthService;
 import org.example.ayziwai.utils.JWTUtil;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     public UserResponse register(UserRequest userRequest) {
@@ -57,21 +56,30 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getLogin(), loginRequest.getPassword())
         );
 
-        User user = (User) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(user);
+        User user = userRepository.findByLogin(loginRequest.getLogin())
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String accessToken = jwtUtil.generateAccessToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
         return LoginResponse.builder()
-            .token(token)
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
             .type("Bearer")
             .login(user.getLogin())
             .roles(user.getRoles().stream()
                 .map(role -> role.getName().replace("ROLE_", ""))
                 .collect(Collectors.toSet()))
             .build();
+    }
+
+    @Override
+    public void logout(String token) {
+        tokenBlacklistService.blacklistToken(token);
     }
 
     private UserResponse convertToResponse(User user) {

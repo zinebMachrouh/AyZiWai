@@ -1,7 +1,8 @@
 package org.example.ayziwai.services.implementation;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.example.ayziwai.entities.Alert;
 import org.example.ayziwai.entities.Device;
 import org.example.ayziwai.entities.enums.AlertSeverity;
@@ -14,8 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -48,12 +48,12 @@ public class AlertServiceImpl implements AlertService {
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device not found"));
 
-        Pair<AlertSeverity, String> result = AlertEvaluator.evaluateAlert(device.getType().toString(), measurementValue);
+        AlertSeverity severity = AlertEvaluator.evaluateAlert(device.getType(), measurementValue);
 
         Alert alert = Alert.builder()
                 .device(device)
-                .severity(result.getFirst())
-                .message(result.getSecond())
+                .severity(severity)
+                .message("Alert for " + device.getType() + ": " + measurementValue)
                 .timestamp(LocalDateTime.now())
                 .build();
 

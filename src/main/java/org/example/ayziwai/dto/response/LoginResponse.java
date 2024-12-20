@@ -8,7 +8,8 @@ import java.util.Collection;
 @Data
 @Builder
 public class LoginResponse {
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private String type;
     private String login;
     private Collection<String> roles;

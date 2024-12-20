@@ -7,9 +7,9 @@ import org.example.ayziwai.entities.enums.DeviceStatus;
 import org.example.ayziwai.entities.enums.DeviceType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 import lombok.Data;
-import org.springframework.data.mongodb.core.mapping.DocumentReference;
 
 @Document(collection = "devices")
 @Data
@@ -24,7 +24,4 @@ public class Device {
 
     @DocumentReference
     private List<Measure> measures;
-
-    @DocumentReference
-    private List<Alert> alerts;
 }
