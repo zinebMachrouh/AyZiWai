@@ -284,6 +284,27 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Actuator",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{base_url}}/actuator/health"
+                    }
+                },
+                {
+                    "name": "Application Info",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{base_url}}/actuator/info"
+                    }
+                }
+            ]
         }
     ],
     "event": [
