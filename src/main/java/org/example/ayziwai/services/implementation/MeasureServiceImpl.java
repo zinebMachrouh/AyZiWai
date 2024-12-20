@@ -5,6 +5,7 @@ import org.example.ayziwai.entities.Device;
 import org.example.ayziwai.entities.Measure;
 import org.example.ayziwai.repositories.DeviceRepository;
 import org.example.ayziwai.repositories.MeasureRepository;
+import org.example.ayziwai.services.interfaces.AlertService;
 import org.example.ayziwai.services.interfaces.MeasureService;
 import org.springframework.stereotype.Service;
 import org.example.ayziwai.dto.request.MeasureRequest;
@@ -22,6 +23,8 @@ public class MeasureServiceImpl implements MeasureService {
     private final MeasureRepository measureRepository;
     private final DeviceRepository deviceRepository;
 
+    private final AlertService alertService;
+
     @Override
     public MeasureResponse saveMeasure(MeasureRequest measureRequest) {
         Device device = deviceRepository.findById(measureRequest.getDeviceId())
@@ -35,6 +38,7 @@ public class MeasureServiceImpl implements MeasureService {
 
         Measure savedMeasure = measureRepository.save(measure);
 
+        alertService.createAlert(savedMeasure.getDevice().getId(), savedMeasure.getValue());
         return mapToResponse(savedMeasure);
     }
 
